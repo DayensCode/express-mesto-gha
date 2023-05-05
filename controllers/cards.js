@@ -22,19 +22,18 @@ module.exports.createCard = (req, res) => {
 
 module.exports.deleteCardById = (req, res) => {
   const { cardId } = req.params;
-  cardSchema.findByIdAndRemove({ cardId })
+  cardSchema.findByIdAndRemove(cardId)
     .then((card) => {
       if (!card) {
-        return res.status(404).send({ message: 'Not found' });
+        res.status(404).send({ message: 'Not found' });
       }
       return res.status(200).send(card);
     })
     .catch((err) => {
-      if (err.name === 'CastError' || err.name === 'ValidationError') {
+      if (err.name === 'CastError') {
         res.status(400).send({ message: 'Invalid data' });
-      } else {
-        res.status(500).send({ message: err.message });
       }
+      return res.status(500).send({ message: err.message });
     });
 };
 
