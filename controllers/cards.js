@@ -33,20 +33,45 @@ module.exports.deleteCardById = (req, res) => {
     });
 };
 
-module.exports.addLike = (req) => {
+module.exports.addLike = (req, res) => {
   cardSchema
     .findByIdAndUpdate(
       req.params.cardId,
       { $addToSet: { likes: req.user._id } },
       { new: true },
-    );
+    )
+    .then((card) => {
+      if (!card) {
+        res.status(404).send({ message: 'Not found' });
+      }
+      return res.status(200).send(card);
+    })
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        res.status(400).send({ message: 'Invalid data' });
+      }
+      return res.status(500)
+        .send({ message: err.message });
+    });
 };
 
-module.exports.deleteLike = (req) => {
+module.exports.deleteLike = (req, res) => {
   cardSchema
     .findByIdAndUpdate(
       req.params.cardId,
       { $pull: { likes: req.user._id } },
       { new: true },
-    );
+    )
+    .then((card) => {
+      if (!card) {
+        res.status(404).send({ message: 'Not found' });
+      }
+      return res.status(200).send(card);
+    })
+    .catch((err) => {
+      if (err.name === 'CastError' || err.name === 'ValidationError') {
+        res.status(400).send({ message: 'Invalid data' });
+      }
+      return res.status(500).send({ message: err.message });
+    });
 };
