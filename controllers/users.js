@@ -37,12 +37,12 @@ module.exports.createUser = (req, res) => {
 
 module.exports.updateProfile = (req, res) => {
   const { name, about } = req.body;
-  const { userId } = req.user._id;
-  userSchema.findByIdAndUpdate({ name, about, userId }, {
+  userSchema.findByIdAndUpdate(req.user._id, { name, about }, {
     new: true,
     runValidators: true,
   })
-    .then((user) => res.status(200).send(user))
+    .then((user) => res.status(200)
+      .send(user))
     .catch((err) => {
       if (err.name === 'CastError' || err.name === 'ValidationError') {
         res.status(400).send({ message: 'Invalid data' });
