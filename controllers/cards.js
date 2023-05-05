@@ -25,13 +25,13 @@ module.exports.deleteCardById = (req, res) => {
   cardSchema.findByIdAndRemove({ cardId })
     .then((card) => {
       if (!card) {
-        res.status(404).send({ message: 'Not found' });
+        return res.status(404).send({ message: 'Not found' });
       }
       return res.status(200).send(card);
     })
     .catch((err) => {
-      if (err.name === 'CastError') {
-        res.status(400).send({ message: 'Card cannot be found' });
+      if (err.name === 'CastError' || err.name === 'ValidationError') {
+        res.status(400).send({ message: 'Invalid data' });
       } else {
         res.status(500).send({ message: err.message });
       }
