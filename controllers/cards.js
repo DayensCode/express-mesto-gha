@@ -22,7 +22,7 @@ module.exports.createCard = (req, res) => {
 
 module.exports.deleteCardById = (req, res) => {
   const { cardId } = req.params;
-  cardSchema.findById({ cardId })
+  cardSchema.findByIdAndRemove({ cardId })
     .then((card) => res.status(200).send(card))
     .catch((err) => {
       if (err.name === 'CastError') {
