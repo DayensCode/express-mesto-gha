@@ -8,8 +8,8 @@ module.exports.getAllCards = (req, res) => {
 
 module.exports.createCard = (req, res) => {
   const { name, link } = req.body;
-  const owner = req.user._id;
-  cardSchema.create({ name, link, owner })
+  console.log(req.user._id);
+  cardSchema.create({ name, link })
     .then((card) => res.status(201).send(card))
     .catch((err) => {
       if (err.name === 'ValidationError') {
