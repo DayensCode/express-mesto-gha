@@ -34,11 +34,19 @@ module.exports.deleteCardById = (req, res) => {
 };
 
 module.exports.addLike = (req) => {
-  const { cardId } = req.params;
-  cardSchema.findByIdAndUpdate(cardId, { $addToSet: { likes: req.user._id } }, { new: true });
+  cardSchema
+    .findByIdAndUpdate(
+      req.params.cardId,
+      { $addToSet: { likes: req.user._id } },
+      { new: true },
+    );
 };
 
 module.exports.deleteLike = (req) => {
-  const { cardId } = req.params;
-  cardSchema.findByIdAndUpdate(cardId, { $pull: { likes: req.user._id } }, { new: true });
+  cardSchema
+    .findByIdAndUpdate(
+      req.params.cardId,
+      { $pull: { likes: req.user._id } },
+      { new: true },
+    );
 };
