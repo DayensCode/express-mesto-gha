@@ -41,8 +41,7 @@ module.exports.updateProfile = (req, res) => {
     new: true,
     runValidators: true,
   })
-    .then((user) => res.status(200)
-      .send(user))
+    .then((user) => res.status(200).send(user))
     .catch((err) => {
       if (err.name === 'CastError' || err.name === 'ValidationError') {
         res.status(400).send({ message: 'Invalid data' });
@@ -53,8 +52,7 @@ module.exports.updateProfile = (req, res) => {
 
 module.exports.updateAvatar = (req, res) => {
   const { avatar } = req.body;
-  const { userId } = req.user._id;
-  userSchema.findByIdAndUpdate({ avatar, userId }, {
+  userSchema.findByIdAndUpdate(req.user._id, { avatar }, {
     new: true,
     runValidators: true,
   })
