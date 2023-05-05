@@ -23,10 +23,15 @@ module.exports.createCard = (req, res) => {
 module.exports.deleteCardById = (req, res) => {
   const { cardId } = req.params;
   cardSchema.findByIdAndRemove({ cardId })
-    .then((card) => res.status(200).send(card))
+    .then((card) => {
+      if (!card) {
+        res.status(404).send({ message: 'Not found' });
+      }
+      return res.status(200).send(card);
+    })
     .catch((err) => {
       if (err.name === 'CastError') {
-        res.status(400).send({ message: 'Card with _id cannot be found' });
+        res.status(400).send({ message: 'Card cannot be found' });
       } else {
         res.status(500).send({ message: err.message });
       }
