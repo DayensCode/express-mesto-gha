@@ -16,7 +16,7 @@ module.exports.getUserById = (req, res) => {
         res.status(400).send({ message: 'Bad Request' });
       }
       if (err.name === 'DocumentNotFoundError') {
-        res.status(404).send({ message: 'Card with _id cannot be found' });
+        return res.status(404).send({ message: 'Card with _id cannot be found' });
       }
       return res.status(500).send({ message: err.message });
     });

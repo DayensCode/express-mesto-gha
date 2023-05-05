@@ -25,7 +25,7 @@ module.exports.deleteCardById = (req, res) => {
   cardSchema.findByIdAndRemove(cardId)
     .then((card) => {
       if (!card) {
-        res.status(404).send({ message: 'Not found' });
+        return res.status(404).send({ message: 'Not found' });
       }
       return res.status(200).send(card);
     })
@@ -46,7 +46,7 @@ module.exports.addLike = (req, res) => {
     )
     .then((card) => {
       if (!card) {
-        res.status(404).send({ message: 'Not found' });
+        return res.status(404).send({ message: 'Not found' });
       }
       return res.status(200).send(card);
     })
@@ -68,7 +68,7 @@ module.exports.deleteLike = (req, res) => {
     )
     .then((card) => {
       if (!card) {
-        res.status(404).send({ message: 'Not found' });
+        return res.status(404).send({ message: 'Not found' });
       }
       return res.status(200).send(card);
     })
