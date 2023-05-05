@@ -10,6 +10,7 @@ module.exports.getUserById = (req, res) => {
   const { userId } = req.params;
   userSchema.findById(userId)
     .then((user) => res.status(200).send({ data: user }))
+    .orFail()
     .catch((err) => {
       if (err.name === 'CastError') {
         res.status(400).send({ message: 'Bad Request' });
