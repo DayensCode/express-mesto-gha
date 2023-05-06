@@ -73,7 +73,7 @@ module.exports.deleteLike = (req, res) => {
       return res.status(200).send(card);
     })
     .catch((err) => {
-      if (err.name === 'CastError' || err.name === 'ValidationError') {
+      if (err.name === 'CastError') {
         res.status(400).send({ message: 'Invalid data' });
       }
       return res.status(500).send({ message: err.message });

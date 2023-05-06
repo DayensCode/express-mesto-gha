@@ -13,7 +13,7 @@ module.exports.getUserById = (req, res) => {
     .then((user) => res.status(200).send({ data: user }))
     .catch((err) => {
       if (err.name === 'CastError') {
-        res.status(400).send({ message: 'Bad Request' });
+        return res.status(400).send({ message: 'Bad Request' });
       }
       if (err.name === 'DocumentNotFoundError') {
         return res.status(404).send({ message: 'Card with _id cannot be found' });
