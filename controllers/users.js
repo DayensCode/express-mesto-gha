@@ -1,9 +1,21 @@
 const userSchema = require('../models/user');
 
+const handleValidationError = (res) => {
+  res.status(400).send({ message: 'Invalid data' });
+};
+
+const handleNotFoundError = (res) => {
+  res.status(404).send({ message: 'Not found' });
+};
+
+const handleDefaultError = (err, res) => {
+  res.status(500).send({ message: err.message });
+};
+
 module.exports.getAllUsers = (req, res) => {
   userSchema.find({})
     .then((users) => res.status(200).send({ data: users }))
-    .catch((err) => res.status(500).send({ message: err.message }));
+    .catch((err) => handleDefaultError(err, res));
 };
 
 module.exports.getUserById = (req, res) => {
@@ -13,12 +25,12 @@ module.exports.getUserById = (req, res) => {
     .then((user) => res.status(200).send({ data: user }))
     .catch((err) => {
       if (err.name === 'CastError') {
-        return res.status(400).send({ message: 'Bad Request' });
+        return handleValidationError(res);
       }
       if (err.name === 'DocumentNotFoundError') {
-        return res.status(404).send({ message: 'Card with _id cannot be found' });
+        return handleNotFoundError(res);
       }
-      return res.status(500).send({ message: err.message });
+      return handleDefaultError(err, res);
     });
 };
 
@@ -28,9 +40,9 @@ module.exports.createUser = (req, res) => {
     .then((user) => res.status(201).send(user))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(400).send({ message: 'Invalid data' });
+        handleValidationError(res);
       } else {
-        res.status(500).send({ message: err.message });
+        handleDefaultError(err, res);
       }
     });
 };
@@ -44,9 +56,9 @@ module.exports.updateProfile = (req, res) => {
     .then((user) => res.status(200).send(user))
     .catch((err) => {
       if (err.name === 'CastError' || err.name === 'ValidationError') {
-        res.status(400).send({ message: 'Invalid data' });
+        handleValidationError(res);
       }
-      return res.status(500).send({ message: err.message });
+      return handleDefaultError(err, res);
     });
 };
 
@@ -59,8 +71,8 @@ module.exports.updateAvatar = (req, res) => {
     .then((user) => res.status(200).send(user))
     .catch((err) => {
       if (err.name === 'CastError' || err.name === 'ValidationError') {
-        res.status(400).send({ message: 'Invalid data' });
+        handleValidationError(res);
       }
-      return res.status(500).send({ message: err.message });
+      return handleDefaultError(err, res);
     });
 };
