@@ -40,7 +40,7 @@ module.exports.deleteCardById = (req, res) => {
       if (err.name === 'CastError') {
         res.status(VALIDATION_ERROR).send({ message: 'Invalid data' });
       }
-      return res.status(INTERNAL_SERVER_ERROR).send({ message: err.message })
+      return res.status(INTERNAL_SERVER_ERROR).send({ message: err.message });
     });
 };
 
