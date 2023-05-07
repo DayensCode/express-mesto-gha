@@ -12,9 +12,13 @@ const handleDefaultError = (err, res) => {
   res.status(500).send({ message: err.message });
 };
 
+const handleSuccessfulRequest = (res, user) => {
+  res.status(200).send(user);
+};
+
 module.exports.getAllUsers = (req, res) => {
   userSchema.find({})
-    .then((users) => res.status(200).send({ data: users }))
+    .then((users) => handleSuccessfulRequest(res, { data: users }))
     .catch((err) => handleDefaultError(err, res));
 };
 
@@ -22,7 +26,7 @@ module.exports.getUserById = (req, res) => {
   const { userId } = req.params;
   userSchema.findById(userId)
     .orFail()
-    .then((user) => res.status(200).send({ data: user }))
+    .then((user) => handleSuccessfulRequest(res, { data: user }))
     .catch((err) => {
       if (err.name === 'CastError') {
         return handleValidationError(res);
@@ -37,7 +41,7 @@ module.exports.getUserById = (req, res) => {
 module.exports.createUser = (req, res) => {
   const { name, about, avatar } = req.body;
   userSchema.create({ name, about, avatar })
-    .then((user) => res.status(201).send(user))
+    .then((user) => handleSuccessfulRequest(res, user))
     .catch((err) => {
       if (err.name === 'ValidationError') {
         handleValidationError(res);
@@ -53,9 +57,9 @@ module.exports.updateProfile = (req, res) => {
     new: true,
     runValidators: true,
   })
-    .then((user) => res.status(200).send(user))
+    .then((user) => handleSuccessfulRequest(res, user))
     .catch((err) => {
-      if (err.name === 'CastError' || err.name === 'ValidationError') {
+      if (err.name === 'ValidationError') {
         handleValidationError(res);
       }
       return handleDefaultError(err, res);
@@ -68,9 +72,9 @@ module.exports.updateAvatar = (req, res) => {
     new: true,
     runValidators: true,
   })
-    .then((user) => res.status(200).send(user))
+    .then((user) => handleSuccessfulRequest(res, user))
     .catch((err) => {
-      if (err.name === 'CastError' || err.name === 'ValidationError') {
+      if (err.name === 'ValidationError') {
         handleValidationError(res);
       }
       return handleDefaultError(err, res);
