@@ -1,26 +1,14 @@
 const cardSchema = require('../models/card');
 
-const handleValidationError = (res) => {
-  res.status(400).send({ message: 'Invalid data' });
-};
-
-const handleNotFoundError = (res) => {
-  res.status(404).send({ message: 'Not found' });
-};
-
-const handleDefaultError = (err, res) => {
-  res.status(500).send({ message: err.message });
-};
-
-const handleSuccessfulRequest = (res, user) => {
-  res.status(200).send(user);
-};
+const VALIDATION_ERROR = 400;
+const NOT_FOUND_ERROR = 404;
+const INTERNAL_SERVER_ERROR = 500;
 
 module.exports.getAllCards = (req, res) => {
   cardSchema.find({})
     .populate(['owner', 'likes'])
-    .then((cards) => handleSuccessfulRequest(res, { data: cards }))
-    .catch((err) => handleDefaultError(err, res));
+    .then((cards) => res.status(200).send({ data: cards }))
+    .catch((err) => res.status(INTERNAL_SERVER_ERROR).send({ message: err.message }));
 };
 
 module.exports.createCard = (req, res) => {
@@ -28,12 +16,12 @@ module.exports.createCard = (req, res) => {
   const owner = req.user._id;
   cardSchema.create({ name, link, owner })
     .populate(['owner', 'likes'])
-    .then((card) => handleSuccessfulRequest(res, card))
+    .then((card) => res.status(201).send(card))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        handleValidationError(err, res);
+        res.status(VALIDATION_ERROR).send({ message: 'Invalid data' });
       } else {
-        handleDefaultError(err, res);
+        res.status(INTERNAL_SERVER_ERROR).send({ message: err.message });
       }
     });
 };
@@ -44,15 +32,15 @@ module.exports.deleteCardById = (req, res) => {
     .populate(['owner', 'likes'])
     .then((card) => {
       if (!card) {
-        return handleNotFoundError(res);
+        return res.status(NOT_FOUND_ERROR).send({ message: 'Not found' });
       }
-      return handleSuccessfulRequest(res, card);
+      return res.status(200).send(card);
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        handleValidationError(res);
+        res.status(VALIDATION_ERROR).send({ message: 'Invalid data' });
       }
-      return handleDefaultError(err, res);
+      return res.status(INTERNAL_SERVER_ERROR).send({ message: err.message })
     });
 };
 
@@ -66,15 +54,15 @@ module.exports.addLike = (req, res) => {
     .populate(['owner', 'likes'])
     .then((card) => {
       if (!card) {
-        return handleNotFoundError(res);
+        return res.status(NOT_FOUND_ERROR).send({ message: 'Not found' });
       }
-      return handleSuccessfulRequest(res, card);
+      return res.status(200).send(card);
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        handleValidationError(res);
+        res.status(VALIDATION_ERROR).send({ message: 'Invalid data' });
       }
-      return handleDefaultError(err, res);
+      return res.status(INTERNAL_SERVER_ERROR).send({ message: err.message });
     });
 };
 
@@ -88,14 +76,14 @@ module.exports.deleteLike = (req, res) => {
     .populate(['owner', 'likes'])
     .then((card) => {
       if (!card) {
-        return handleNotFoundError(res);
+        return res.status(NOT_FOUND_ERROR).send({ message: 'Not found' });
       }
-      return handleSuccessfulRequest(res, card);
+      return res.status(200).send(card);
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        handleValidationError(res);
+        res.status(VALIDATION_ERROR).send({ message: 'Invalid data' });
       }
-      return handleDefaultError(err, res);
+      return res.status(INTERNAL_SERVER_ERROR).send({ message: err.message });
     });
 };
