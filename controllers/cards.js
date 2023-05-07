@@ -12,10 +12,14 @@ const handleDefaultError = (err, res) => {
   res.status(500).send({ message: err.message });
 };
 
+const handleSuccessfulRequest = (res, user) => {
+  res.status(200).send(user);
+};
+
 module.exports.getAllCards = (req, res) => {
   cardSchema.find({})
     .populate(['owner', 'likes'])
-    .then((cards) => res.status(200).send({ data: cards }))
+    .then((cards) => handleSuccessfulRequest(res, { data: cards }))
     .catch((err) => handleDefaultError(err, res));
 };
 
@@ -24,7 +28,7 @@ module.exports.createCard = (req, res) => {
   const owner = req.user._id;
   cardSchema.create({ name, link, owner })
     .populate(['owner', 'likes'])
-    .then((card) => res.status(201).send(card))
+    .then((card) => handleSuccessfulRequest(res, card))
     .catch((err) => {
       if (err.name === 'ValidationError') {
         handleValidationError(err, res);
@@ -42,7 +46,7 @@ module.exports.deleteCardById = (req, res) => {
       if (!card) {
         return handleNotFoundError(res);
       }
-      return res.status(200).send(card);
+      return handleSuccessfulRequest(res, card);
     })
     .catch((err) => {
       if (err.name === 'CastError') {
@@ -64,7 +68,7 @@ module.exports.addLike = (req, res) => {
       if (!card) {
         return handleNotFoundError(res);
       }
-      return res.status(200).send(card);
+      return handleSuccessfulRequest(res, card);
     })
     .catch((err) => {
       if (err.name === 'CastError') {
@@ -86,7 +90,7 @@ module.exports.deleteLike = (req, res) => {
       if (!card) {
         return handleNotFoundError(res);
       }
-      return res.status(200).send(card);
+      return handleSuccessfulRequest(res, card);
     })
     .catch((err) => {
       if (err.name === 'CastError') {
