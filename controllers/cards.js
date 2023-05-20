@@ -1,17 +1,17 @@
 const cardSchema = require('../models/card');
 
-const VALIDATION_ERROR = 400;
-const NOT_FOUND_ERROR = 404;
-const INTERNAL_SERVER_ERROR = 500;
+const BadRequestError = require('../errors/bad-request-error');
+const ForbiddenError = require('../errors/forbidden-error');
+const NotFoundError = require('../errors/not-found-error');
 
-module.exports.getAllCards = (req, res) => {
+module.exports.getAllCards = (req, res, next) => {
   cardSchema.find({})
     .populate(['owner', 'likes'])
     .then((cards) => res.status(200).send({ data: cards }))
-    .catch((err) => res.status(INTERNAL_SERVER_ERROR).send({ message: err.message }));
+    .catch(next);
 };
 
-module.exports.createCard = (req, res) => {
+module.exports.createCard = (req, res, next) => {
   const { name, link } = req.body;
   const owner = req.user._id;
   cardSchema.create({ name, link, owner })
@@ -19,32 +19,29 @@ module.exports.createCard = (req, res) => {
     .then((card) => res.status(201).send(card))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(VALIDATION_ERROR).send({ message: 'Invalid data' });
+        next(BadRequestError('Invalid data'));
       } else {
-        res.status(INTERNAL_SERVER_ERROR).send({ message: err.message });
+        next(err);
       }
     });
 };
 
-module.exports.deleteCardById = (req, res) => {
+module.exports.deleteCardById = (req, res, next) => {
   const { cardId } = req.params;
-  cardSchema.findByIdAndRemove(cardId)
+  cardSchema.findById(cardId)
     .populate(['owner', 'likes'])
     .then((card) => {
       if (!card) {
-        return res.status(NOT_FOUND_ERROR).send({ message: 'Not found' });
+        throw new NotFoundError('Not found');
+      } if (!card.owner.equals(req.user._id)) {
+        return next(ForbiddenError('Card cannot be deleted'));
       }
-      return res.status(200).send(card);
+      return card.deleteOne().then(() => res.send({ message: 'Card was deleted' }));
     })
-    .catch((err) => {
-      if (err.name === 'CastError') {
-        res.status(VALIDATION_ERROR).send({ message: 'Invalid data' });
-      }
-      return res.status(INTERNAL_SERVER_ERROR).send({ message: err.message });
-    });
+    .catch(next);
 };
 
-module.exports.addLike = (req, res) => {
+module.exports.addLike = (req, res, next) => {
   cardSchema
     .findByIdAndUpdate(
       req.params.cardId,
@@ -54,19 +51,19 @@ module.exports.addLike = (req, res) => {
     .populate(['owner', 'likes'])
     .then((card) => {
       if (!card) {
-        return res.status(NOT_FOUND_ERROR).send({ message: 'Not found' });
+        throw new NotFoundError('Not found');
       }
       return res.status(200).send(card);
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        res.status(VALIDATION_ERROR).send({ message: 'Invalid data' });
+        return next(BadRequestError('Invalid data'));
       }
-      return res.status(INTERNAL_SERVER_ERROR).send({ message: err.message });
+      return next(err);
     });
 };
 
-module.exports.deleteLike = (req, res) => {
+module.exports.deleteLike = (req, res, next) => {
   cardSchema
     .findByIdAndUpdate(
       req.params.cardId,
@@ -76,14 +73,14 @@ module.exports.deleteLike = (req, res) => {
     .populate(['owner', 'likes'])
     .then((card) => {
       if (!card) {
-        return res.status(NOT_FOUND_ERROR).send({ message: 'Not found' });
+        throw new NotFoundError('Not found');
       }
       return res.status(200).send(card);
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        res.status(VALIDATION_ERROR).send({ message: 'Invalid data' });
+        return next(BadRequestError('Invalid data'));
       }
-      return res.status(INTERNAL_SERVER_ERROR).send({ message: err.message });
+      return next(err);
     });
 };

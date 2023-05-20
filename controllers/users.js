@@ -1,60 +1,70 @@
 const userSchema = require('../models/user');
+const BadRequestError = require('../errors/bad-request-error');
+const NotFoundError = require('../errors/not-found-error');
 
-const VALIDATION_ERROR = 400;
-const NOT_FOUND_ERROR = 404;
-const INTERNAL_SERVER_ERROR = 500;
-
-module.exports.getAllUsers = (req, res) => {
-  userSchema.find({})
-    .then((users) => res.status(200).send({ data: users }))
-    .catch((err) => res.status(INTERNAL_SERVER_ERROR).send({ message: err.message }));
-};
-
-module.exports.getUserById = (req, res) => {
-  const { userId } = req.params;
-  userSchema.findById(userId)
-    .orFail()
-    .then((user) => res.status(200).send({ data: user }))
+module.exports.getUser = (req, res, next) => {
+  userSchema.findById(req.user._id)
+    .then((user) => {
+      if (!user) {
+        throw new NotFoundError('User cannot be found');
+      }
+      res.status(200).send(user);
+    })
     .catch((err) => {
       if (err.name === 'CastError') {
-        return res.status(VALIDATION_ERROR).send({ message: 'Bad Request' });
-      }
-      if (err.name === 'DocumentNotFoundError') {
-        return res.status(NOT_FOUND_ERROR).send({ message: 'Card with _id cannot be found' });
-      }
-      return res.status(INTERNAL_SERVER_ERROR).send({ message: err.message });
-    });
-};
-
-module.exports.createUser = (req, res) => {
-  const { name, about, avatar } = req.body;
-  userSchema.create({ name, about, avatar })
-    .then((user) => res.status(201).send(user))
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        res.status(VALIDATION_ERROR).send({ message: 'Invalid data' });
+        next(BadRequestError('Incorrect data'));
+      } else if (err.message === 'NotFound') {
+        next(NotFoundError('User cannot be found'));
       } else {
-        res.status(INTERNAL_SERVER_ERROR).send({ message: err.message });
+        next(err);
       }
     });
 };
 
-module.exports.updateProfile = (req, res) => {
+module.exports.getAllUsers = (req, res, next) => {
+  userSchema.find({})
+    .then((users) => res.status(200).send({ data: users }))
+    .catch(next);
+};
+
+module.exports.getUserById = (req, res, next) => {
+  const { userId } = req.params;
+  userSchema.findById(userId)
+    .then((user) => {
+      if (!user) {
+        throw new NotFoundError('User cannot be found');
+      }
+      res.status(200).send({ data: user });
+    })
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        return next(BadRequestError('Incorrect id'));
+      }
+      return next(err);
+    });
+};
+
+module.exports.updateProfile = (req, res, next) => {
   const { name, about } = req.body;
   userSchema.findByIdAndUpdate(req.user._id, { name, about }, {
     new: true,
     runValidators: true,
   })
-    .then((user) => res.status(200).send(user))
+    .then((user) => {
+      if (!user) {
+        throw new NotFoundError('User cannot be found');
+      }
+      res.status(200).send(user);
+    })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(VALIDATION_ERROR).send({ message: 'Invalid data' });
+        next(BadRequestError('Invalid data'));
       }
-      return res.status(INTERNAL_SERVER_ERROR).send({ message: err.message });
+      return next(err);
     });
 };
 
-module.exports.updateAvatar = (req, res) => {
+module.exports.updateAvatar = (req, res, next) => {
   const { avatar } = req.body;
   userSchema.findByIdAndUpdate(req.user._id, { avatar }, {
     new: true,
@@ -63,8 +73,8 @@ module.exports.updateAvatar = (req, res) => {
     .then((user) => res.status(200).send(user))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(VALIDATION_ERROR).send({ message: 'Invalid data' });
+        next(BadRequestError('Invalid data'));
       }
-      return res.status(INTERNAL_SERVER_ERROR).send({ message: err.message });
+      return next(err);
     });
 };
