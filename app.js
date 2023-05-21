@@ -1,8 +1,10 @@
 const express = require('express');
 const mongoose = require('mongoose');
+const { errors } = require('celebrate');
 const router = require('./routes/index');
 const { createUser, login } = require('./controllers/auth');
 const auth = require('./middlewares/auth');
+const { createUserValidation, loginValidation } = require('./middlewares/validation');
 
 const {
   MONGO_URL = 'mongodb://127.0.0.1:27017/mestodb',
@@ -14,10 +16,11 @@ app.use(express.json());
 app.use(
   express.urlencoded({ extended: true }),
 );
-app.post('/signin', login);
-app.post('/signup', createUser);
+app.post('/signin', loginValidation, login);
+app.post('/signup', createUserValidation, createUser);
 app.use(auth);
 app.use(router);
+app.use(errors());
 
 app.use((err, req, res, next) => {
   const {
