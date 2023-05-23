@@ -1,5 +1,4 @@
 const userSchema = require('../models/user');
-const BadRequestError = require('../errors/bad-request-error');
 const NotFoundError = require('../errors/not-found-error');
 
 module.exports.getUser = (req, res, next) => {
@@ -7,13 +6,12 @@ module.exports.getUser = (req, res, next) => {
     .then((user) => {
       if (!user) {
         throw new NotFoundError('User cannot be found');
+      } else {
+        res.status(200).send(user);
       }
-      res.status(200).send(user);
     })
     .catch((err) => {
-      if (err.name === 'CastError') {
-        next(BadRequestError('Incorrect data'));
-      } else if (err.message === 'NotFound') {
+      if (err.message === 'NotFound') {
         next(NotFoundError('User cannot be found'));
       } else {
         next(err);
@@ -33,15 +31,11 @@ module.exports.getUserById = (req, res, next) => {
     .then((user) => {
       if (!user) {
         throw new NotFoundError('User cannot be found');
+      } else {
+        res.status(200).send({ data: user });
       }
-      res.status(200).send({ data: user });
     })
-    .catch((err) => {
-      if (err.name === 'CastError') {
-        return next(BadRequestError('Incorrect id'));
-      }
-      return next(err);
-    });
+    .catch(next);
 };
 
 module.exports.updateProfile = (req, res, next) => {
@@ -53,15 +47,11 @@ module.exports.updateProfile = (req, res, next) => {
     .then((user) => {
       if (!user) {
         throw new NotFoundError('User cannot be found');
+      } else {
+        res.status(200).send(user);
       }
-      res.status(200).send(user);
     })
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        next(BadRequestError('Invalid data'));
-      }
-      return next(err);
-    });
+    .catch(next);
 };
 
 module.exports.updateAvatar = (req, res, next) => {
@@ -71,10 +61,5 @@ module.exports.updateAvatar = (req, res, next) => {
     runValidators: true,
   })
     .then((user) => res.status(200).send(user))
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        next(BadRequestError('Invalid data'));
-      }
-      return next(err);
-    });
+    .catch(next);
 };

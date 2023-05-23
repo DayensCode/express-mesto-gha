@@ -6,7 +6,7 @@ module.exports = (req, res, next) => {
   const { authorization } = req.headers;
   let payload;
   if (!authorization || !authorization.startsWith('Bearer ')) {
-    throw new UnauthorizedError('You need to log in');
+    next(new UnauthorizedError('You need to log in'));
   }
   const token = authorization.replace('Bearer ', '');
   try {
