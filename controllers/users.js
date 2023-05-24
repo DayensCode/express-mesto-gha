@@ -10,13 +10,7 @@ module.exports.getUser = (req, res, next) => {
         res.status(200).send(user);
       }
     })
-    .catch((err) => {
-      if (err.message === 'NotFound') {
-        next(NotFoundError('User cannot be found'));
-      } else {
-        next(err);
-      }
-    });
+    .catch(next);
 };
 
 module.exports.getAllUsers = (req, res, next) => {
@@ -60,6 +54,12 @@ module.exports.updateAvatar = (req, res, next) => {
     new: true,
     runValidators: true,
   })
-    .then((user) => res.status(200).send(user))
+    .then((user) => {
+      if (!user) {
+        throw new NotFoundError('User cannot be found');
+      } else {
+        res.status(200).send(user);
+      }
+    })
     .catch(next);
 };
